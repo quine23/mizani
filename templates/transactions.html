@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Transactions{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Transactions</h1>
+  <div class="actions">
+    <a class="btn secondary" href="{{ url_for('export', file_format='csv') }}?{{ export_query }}">Export CSV</a>
+    <a class="btn secondary" href="{{ url_for('export', file_format='xlsx') }}?{{ export_query }}">Export Excel</a>
+  </div>
+</header>
+
+<form method="get" class="filters" aria-label="Search and filter">
+  <div><label for="q">Search</label><input id="q" name="q" value="{{ args.get('q', '') }}" placeholder="Description or category"></div>
+  <div><label for="type">Type</label>
+    <select id="type" name="type">
+      <option value="">All</option>
+      <option value="income" {% if args.get('type') == 'income' %}selected{% endif %}>Income</option>
+      <option value="expense" {% if args.get('type') == 'expense' %}selected{% endif %}>Expense</option>
+    </select></div>
+  <div><label for="category">Category</label>
+    <select id="category" name="category">
+      <option value="">All</option>
+      {% for c in categories %}<option value="{{ c.category_id }}" {% if args.get('category') == c.category_id|string %}selected{% endif %}>{{ c.name }} ({{ c.category_type }})</option>{% endfor %}
+    </select></div>
+  <div><label for="month">Month</label><input id="month" name="month" type="month" value="{{ args.get('month', '') }}"></div>
+  <div><label for="from">From</label><input id="from" name="from" type="date" value="{{ args.get('from', '') }}"></div>
+  <div><label for="to">To</label><input id="to" name="to" type="date" value="{{ args.get('to', '') }}"></div>
+  <div><label for="sort">Sort by</label>
+    <select id="sort" name="sort">
+      {% for key, label in [('date','Date'),('amount','Amount'),('category','Category'),('type','Type')] %}
+      <option value="{{ key }}" {% if args.get('sort', 'date') == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select></div>
+  <div><label for="dir">Order</label>
+    <select id="dir" name="dir">
+      <option value="desc" {% if args.get('dir') != 'asc' %}selected{% endif %}>High to low / newest</option>
+      <option value="asc" {% if args.get('dir') == 'asc' %}selected{% endif %}>Low to high / oldest</option>
+    </select></div>
+  <div class="filter-actions"><button class="btn" type="submit">Apply</button> <a class="btn ghost" href="{{ url_for('transactions_page') }}">Clear</a></div>
+</form>
+
+{% for message in errors.values() %}<p class="field-error" role="alert">{{ message }}</p>{% endfor %}
+
+<p class="muted" aria-live="polite">{{ totals.count }} record{{ '' if totals.count == 1 else 's' }}:
+  <span class="inc num">{{ totals.income|money }}</span> in,
+  <span class="exp num">{{ totals.expenses|money }}</span> out,
+  net <strong class="num">{{ totals.net|money }}</strong></p>
+
+{% if items %}
+<div class="table-wrap">
+  <table>
+    <caption class="sr">Transactions</caption>
+    <thead><tr><th scope="col">Date</th><th scope="col">Type</th><th scope="col">Category</th><th scope="col">Description</th><th scope="col" class="r">Amount</th><th scope="col"><span class="sr">Actions</span></th></tr></thead>
+    <tbody>
+    {% for t in items %}
+      <tr>
+        <td>{{ t.transaction_date }}</td>
+        <td>{{ t.label }}</td>
+        <td><a href="{{ url_for('transaction_detail', txn_id=t.transaction_id) }}">{{ t.category_name }}</a></td>
+        <td>{{ t.description or '' }}</td>
+        <td class="r num {{ 'inc' if t.transaction_type == 'income' else 'exp' }}">{{ '+' if t.transaction_type == 'income' else '-' }}{{ t.amount|money }}</td>
+        <td class="acts"><a href="{{ url_for('transaction_edit', txn_id=t.transaction_id) }}">Edit</a> <a href="{{ url_for('transaction_delete', txn_id=t.transaction_id) }}">Delete</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="empty">No transactions match these filters. <a href="{{ url_for('transactions_page') }}">Clear the filters</a> to see everything.</p>
+{% endif %}
+{% endblock %}

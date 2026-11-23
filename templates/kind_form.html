@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from "macros.html" import field_error %}
+{% block title %}{{ 'Edit' if txn else 'Add' }} {{ spec.singular }}{% endblock %}
+{% block content %}
+<section class="narrow">
+  <h1>{{ 'Edit' if txn else 'Add' }} {{ spec.singular }}</h1>
+  <form method="post" novalidate>
+    {{ csrf_input() }}
+    <label for="amount">Amount (KES)</label>
+    <input id="amount" name="amount" inputmode="decimal" value="{{ form.get('amount', '') }}" required aria-describedby="err-amount">
+    {{ field_error(errors, 'amount') }}
+
+    <label for="transaction_date">Date</label>
+    <input id="transaction_date" name="transaction_date" type="date" value="{{ form.get('transaction_date', today) }}" required>
+    {{ field_error(errors, 'transaction_date') }}
+
+    <label for="category_id">Category</label>
+    <select id="category_id" name="category_id" required>
+      <option value="">Choose a category</option>
+      {% for c in categories %}
+      <option value="{{ c.category_id }}" {% if form.get('category_id')|string == c.category_id|string %}selected{% endif %}>{{ c.name }}{% if not c.is_default %} (yours){% endif %}</option>
+      {% endfor %}
+    </select>
+    {{ field_error(errors, 'category_id') }}
+
+    <label for="description">{{ 'Source or note' if kind == 'income' else 'What was it for?' }} <span class="muted">(optional)</span></label>
+    <input id="description" name="description" maxlength="200" value="{{ form.get('description', '') }}">
+    {{ field_error(errors, 'description') }}
+    {{ field_error(errors, 'form') }}
+
+    <div class="row">
+      <button class="btn" type="submit">Save {{ spec.singular }}</button>
+      <a class="btn ghost" href="{{ url_for('kind_list', kind=kind) }}">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

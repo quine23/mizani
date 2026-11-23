@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Mizani{% endblock %} | Mizani</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+{% if g.user %}
+<div class="shell">
+  <aside class="side">
+    <a class="brand" href="{{ url_for('dashboard') }}">Mizani</a>
+    <nav aria-label="Main">
+      {% set here = request.endpoint %}
+      <a href="{{ url_for('dashboard') }}" {% if here == 'dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
+      <a href="{{ url_for('transactions_page') }}" {% if here in ('transactions_page','transaction_detail') %}aria-current="page"{% endif %}>Transactions</a>
+      <a href="{{ url_for('kind_list', kind='income') }}" {% if request.view_args and request.view_args.get('kind') == 'income' %}aria-current="page"{% endif %}>Income</a>
+      <a href="{{ url_for('kind_list', kind='expenses') }}" {% if request.view_args and request.view_args.get('kind') == 'expenses' %}aria-current="page"{% endif %}>Expenses</a>
+      <a href="{{ url_for('categories_page') }}" {% if here and here.startswith('categor') %}aria-current="page"{% endif %}>Categories</a>
+      <a href="{{ url_for('budgets_page') }}" {% if here and here.startswith('budget') %}aria-current="page"{% endif %}>Budgets</a>
+      <a href="{{ url_for('reports_page') }}" {% if here == 'reports_page' %}aria-current="page"{% endif %}>Reports</a>
+    </nav>
+    <div class="who">
+      <span>{{ g.user.full_name }}</span>
+      <form method="post" action="{{ url_for('logout') }}">{{ csrf_input() }}<button class="link" type="submit">Log out</button></form>
+    </div>
+  </aside>
+  <main class="main" id="content">
+{% else %}
+  <main class="auth-main" id="content">
+{% endif %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <p class="flash {{ category }}" role="status">{{ message }}</p>
+      {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+{% if g.user %}</div>{% endif %}
+</body>
+</html>

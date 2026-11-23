@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% from "macros.html" import field_error, period_nav, budget_bar %}
+{% block title %}Budgets{% endblock %}
+{% block content %}
+<header class="page-head"><h1>Budgets</h1></header>
+{{ period_nav('budgets_page', period) }}
+
+<div class="two-col">
+  <section>
+    <h2>{{ period.label }}</h2>
+    {% for b in items %}
+      {{ budget_bar(b) }}
+      <p class="acts"><a href="{{ url_for('budget_delete', budget_id=b.budget_id) }}">Delete this budget</a></p>
+    {% else %}
+      <p class="empty">No budgets for {{ period.label }} yet. Set one on the right.</p>
+    {% endfor %}
+  </section>
+
+  <section>
+    <h2>Set a budget</h2>
+    <form method="post" novalidate>
+      {{ csrf_input() }}
+      <label for="category_id">Applies to</label>
+      <select id="category_id" name="category_id">
+        <option value="">Overall monthly budget</option>
+        {% for c in expense_categories %}<option value="{{ c.category_id }}" {% if form.get('category_id')|string == c.category_id|string %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+      </select>
+      {{ field_error(errors, 'category_id') }}
+      <label for="amount">Limit (KES)</label>
+      <input id="amount" name="amount" inputmode="decimal" value="{{ form.get('amount', '') }}" required>
+      {{ field_error(errors, 'amount') }}
+      <label for="month">Month</label>
+      <select id="month" name="month">
+        {% for name in month_names %}<option value="{{ loop.index }}" {% if loop.index == period.month %}selected{% endif %}>{{ name }}</option>{% endfor %}
+      </select>
+      {{ field_error(errors, 'month') }}
+      <label for="year">Year</label>
+      <input id="year" name="year" type="number" min="2000" max="2100" value="{{ period.year }}" required>
+      {{ field_error(errors, 'year') }}
+      <p class="hint">Setting a budget again for the same month and category replaces the old limit. You get a warning at 80% used.</p>
+      <button class="btn" type="submit">Save budget</button>
+    </form>
+  </section>
+</div>
+{% endblock %}

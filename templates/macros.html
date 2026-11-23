@@ -1,0 +1,26 @@
+{% macro field_error(errors, name) %}
+  {% if errors and errors.get(name) %}<p class="field-error" id="err-{{ name }}">{{ errors[name] }}</p>{% endif %}
+{% endmacro %}
+
+{% macro period_nav(endpoint, period) %}
+  <nav class="period" aria-label="Choose month">
+    <a href="{{ url_for(endpoint, month=period.prev.month, year=period.prev.year) }}" aria-label="Previous month">&lsaquo; Previous</a>
+    <strong>{{ period.label }}</strong>
+    <a href="{{ url_for(endpoint, month=period.next.month, year=period.next.year) }}" aria-label="Next month">Next &rsaquo;</a>
+  </nav>
+{% endmacro %}
+
+{% macro budget_bar(b) %}
+  <div class="budget {{ b.status }}">
+    <div class="budget-head">
+      <span class="budget-name">{{ b.label }}</span>
+      <span class="num">{{ b.spent|money }} of {{ b.amount|money }}</span>
+    </div>
+    <div class="bar" role="img" aria-label="{{ b.percent_used }} percent of budget used"><span style="width: {{ [b.percent_used, 100]|min }}%"></span></div>
+    <p class="budget-note">
+      {% if b.status == 'exceeded' %}Over budget by {{ b.overspent_by|money }}.
+      {% elif b.status == 'warning' %}Warning: {{ b.percent_used }}% used, {{ b.remaining|money }} left.
+      {% else %}{{ b.remaining|money }} left ({{ b.percent_used }}% used).{% endif %}
+    </p>
+  </div>
+{% endmacro %}

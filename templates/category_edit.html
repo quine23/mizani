@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "macros.html" import field_error %}
+{% block title %}Rename category{% endblock %}
+{% block content %}
+<section class="narrow">
+  <h1>Rename category</h1>
+  <form method="post" novalidate>
+    {{ csrf_input() }}
+    <label for="name">Name ({{ category.category_type }} category)</label>
+    <input id="name" name="name" maxlength="40" value="{{ name }}" required>
+    {{ field_error(errors, 'name') }}
+    <div class="row">
+      <button class="btn" type="submit">Save name</button>
+      <a class="btn ghost" href="{{ url_for('categories_page') }}">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

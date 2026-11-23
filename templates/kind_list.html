@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ spec.title }}{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>{{ spec.title }}</h1>
+  <div class="actions"><a class="btn" href="{{ url_for('kind_new', kind=kind) }}">Add {{ spec.singular }}</a></div>
+</header>
+<nav class="period" aria-label="Choose month">
+  <a href="{{ url_for('kind_list', kind=kind, month=period.prev.month, year=period.prev.year) }}">&lsaquo; Previous</a>
+  <strong>{{ period.label }}</strong>
+  <a href="{{ url_for('kind_list', kind=kind, month=period.next.month, year=period.next.year) }}">Next &rsaquo;</a>
+</nav>
+<p class="figure {{ 'inc' if kind == 'income' else 'exp' }}">{{ total|money }} <span class="muted small">total for the month</span></p>
+{% if items %}
+<div class="table-wrap">
+  <table>
+    <caption class="sr">{{ spec.title }} in {{ period.label }}</caption>
+    <thead><tr><th scope="col">Date</th><th scope="col">Category</th><th scope="col">Description</th><th scope="col" class="r">Amount</th><th scope="col"><span class="sr">Actions</span></th></tr></thead>
+    <tbody>
+    {% for t in items %}
+      <tr>
+        <td>{{ t.transaction_date }}</td>
+        <td>{{ t.category_name }}</td>
+        <td>{{ t.description or '' }}</td>
+        <td class="r num">{{ t.amount|money }}</td>
+        <td class="acts"><a href="{{ url_for('kind_edit', kind=kind, txn_id=t.transaction_id) }}">Edit</a> <a href="{{ url_for('kind_delete', kind=kind, txn_id=t.transaction_id) }}">Delete</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="empty">No {{ spec.singular }} recorded in {{ period.label }}. <a href="{{ url_for('kind_new', kind=kind) }}">Add {{ spec.singular }}</a> or use Previous to look at an earlier month.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ txn.label }} record{% endblock %}
+{% block content %}
+<section class="narrow">
+  <h1>{{ txn.label }} record</h1>
+  <p class="figure {{ 'inc' if txn.transaction_type == 'income' else 'exp' }}">{{ txn.amount|money }}</p>
+  <dl class="facts">
+    <dt>Date</dt><dd>{{ txn.transaction_date }}</dd>
+    <dt>Type</dt><dd>{{ txn.label }}</dd>
+    <dt>Category</dt><dd>{{ txn.category_name }}</dd>
+    <dt>Description</dt><dd>{{ txn.description or 'None' }}</dd>
+    <dt>Recorded</dt><dd>{{ txn.created_at }}</dd>
+  </dl>
+  <div class="row">
+    <a class="btn" href="{{ url_for('transaction_edit', txn_id=txn.transaction_id) }}">Edit</a>
+    <a class="btn danger" href="{{ url_for('transaction_delete', txn_id=txn.transaction_id) }}">Delete</a>
+    <a class="btn ghost" href="{{ url_for('transactions_page') }}">Back to transactions</a>
+  </div>
+</section>
+{% endblock %}

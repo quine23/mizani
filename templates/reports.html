@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% from "macros.html" import period_nav, budget_bar %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<header class="page-head"><h1>Reports</h1></header>
+{{ period_nav('reports_page', period) }}
+
+<section class="strip" aria-label="Monthly summary">
+  <div><h2 class="small-label">Income</h2><p class="figure inc">{{ summary.income|money }}</p></div>
+  <div><h2 class="small-label">Expenses</h2><p class="figure exp">{{ summary.expenses|money }}</p></div>
+  <div><h2 class="small-label">Net</h2><p class="figure {{ 'exp' if summary.net < 0 else 'inc' }}">{{ summary.net|money }}</p></div>
+  <div><h2 class="small-label">Records</h2><p class="figure">{{ summary.transaction_count }}</p></div>
+</section>
+
+<section>
+  <h2>Summary</h2>
+  <ul class="insights">{% for line in insights %}<li>{{ line }}</li>{% endfor %}</ul>
+</section>
+
+<section>
+  <h2>Spending by category</h2>
+  {% if summary.expense_categories %}
+  <img class="chart" src="{{ url_for('chart_categories', month=period.month, year=period.year) }}" alt="Bar chart of spending by category for {{ period.label }}" width="800">
+  <div class="table-wrap">
+    <table>
+      <caption class="sr">Spending by category in {{ period.label }}</caption>
+      <thead><tr><th scope="col">Category</th><th scope="col" class="r">Records</th><th scope="col" class="r">Total</th><th scope="col" class="r">Share</th></tr></thead>
+      <tbody>
+      {% for row in summary.expense_categories %}
+        <tr><td>{{ row.name }}</td><td class="r num">{{ row.count }}</td><td class="r num">{{ row.total|money }}</td><td class="r num">{{ row.share }}%</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="empty">No expenses recorded for {{ period.label }}.</p>
+  {% endif %}
+</section>
+
+<section>
+  <h2>Income and expenses through {{ period.year }}</h2>
+  <img class="chart" src="{{ url_for('chart_monthly', month=period.month, year=period.year) }}" alt="Bar chart comparing income and expenses for each month of {{ period.year }}" width="800">
+  <div class="table-wrap">
+    <table>
+      <caption class="sr">Monthly totals for {{ period.year }}</caption>
+      <thead><tr><th scope="col">Month</th><th scope="col" class="r">Income</th><th scope="col" class="r">Expenses</th><th scope="col" class="r">Net</th></tr></thead>
+      <tbody>
+      {% for m in yearly %}
+        <tr><td>{{ m.label }}</td><td class="r num">{{ m.income|money }}</td><td class="r num">{{ m.expenses|money }}</td><td class="r num {{ 'exp' if m.net < 0 }}">{{ m.net|money }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% if budgets %}
+<section>
+  <h2>Budget status</h2>
+  {% for b in budgets %}{{ budget_bar(b) }}{% endfor %}
+</section>
+{% endif %}
+{% endblock %}

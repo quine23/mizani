@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% from "macros.html" import field_error %}
+{% block title %}Categories{% endblock %}
+{% block content %}
+<header class="page-head"><h1>Categories</h1></header>
+
+<form method="post" class="inline-form" novalidate>
+  {{ csrf_input() }}
+  <div><label for="name">New category name</label>
+    <input id="name" name="name" maxlength="40" value="{{ form.get('name', '') }}" required>
+    {{ field_error(errors, 'name') }}</div>
+  <div><label for="category_type">Used for</label>
+    <select id="category_type" name="category_type">
+      <option value="expense" {% if form.get('category_type') != 'income' %}selected{% endif %}>Expenses</option>
+      <option value="income" {% if form.get('category_type') == 'income' %}selected{% endif %}>Income</option>
+    </select>
+    {{ field_error(errors, 'category_type') }}</div>
+  <div><button class="btn" type="submit">Add category</button></div>
+</form>
+
+<div class="two-col">
+  {% for title, items in [('Expense categories', expense_categories), ('Income categories', income_categories)] %}
+  <section>
+    <h2>{{ title }}</h2>
+    <ul class="plain">
+      {% for c in items %}
+      <li>
+        <span>{{ c.name }}{% if c.is_default %} <span class="tag">default</span>{% endif %}</span>
+        {% if not c.is_default %}
+        <span class="acts"><a href="{{ url_for('category_edit', category_id=c.category_id) }}">Rename</a> <a href="{{ url_for('category_delete', category_id=c.category_id) }}">Delete</a></span>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}
